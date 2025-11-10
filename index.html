@@ -1,0 +1,1261 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Ứng dụng Dự đoán Học lực</title>
+  <style>
+    .post {
+  background: #fff7e6;
+  border-radius: 10px;
+  padding: 15px;
+  margin-bottom: 15px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+.termBtn {
+  padding: 8px 14px;
+  border: none;
+  background: #ddd;
+  border-radius: 6px;
+  cursor: pointer;
+  margin: 0 4px;
+}
+
+.termBtn.active {
+  background: #4f8ef7;
+  color: white;
+  font-weight: bold;
+}
+
+
+.post-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.post-header img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  margin-right: 10px;
+  border: 2px solid #f8b500;
+  object-fit: cover;
+}
+
+.post-content {
+  font-size: 15px;
+  margin-top: 5px;
+}
+
+.post-time {
+  color: #888;
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.post-delete {
+  float: right;
+  background: none;
+  border: none;
+  color: red;
+  cursor: pointer;
+  font-size: 14px;
+}
+.post-delete:hover {
+  text-decoration: underline;
+}
+
+    .avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid white;
+  object-fit: cover;
+  vertical-align: middle;
+  margin-right: 8px;
+  background: #fff;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.avatar:hover {
+  transform: scale(1.1);
+}
+
+   * { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: "Segoe UI", sans-serif;
+  background: linear-gradient(135deg, #fceabb, #f8b500);
+  min-height: 100vh;
+}
+
+/* --- Thanh menu cố định --- */
+header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background: #f8b500;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 40px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  z-index: 1000;
+}
+
+.nav-links {
+  display: flex;
+  gap: 20px;
+}
+
+.nav-links button {
+  background: transparent;
+  border: none;
+  font-size: 16px;
+  font-weight: bold;
+  color: white;
+  cursor: pointer;
+}
+
+.nav-links button:hover {
+  text-decoration: underline;
+}
+
+.user-menu {
+  position: relative;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.user-dropdown {
+  display: none;
+  position: absolute;
+  top: 35px;
+  right: 0;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  overflow: hidden;
+}
+
+.user-dropdown button {
+  width: 150px;
+  border: none;
+  background: white;
+  padding: 10px;
+  text-align: left;
+  cursor: pointer;
+  font-size: 15px;
+}
+
+.user-dropdown button:hover {
+  background: #ffe08a;
+}
+
+.user-menu:hover .user-dropdown {
+  display: block;
+}
+
+/* --- Container chính --- */
+.container {
+  background: #fff;
+  border-radius: 20px;
+  padding: 40px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  width: 85%;
+  max-width: 1000px;
+  text-align: center;
+  margin: 120px auto;
+  display: none;
+}
+
+.container.active {
+  display: block;
+}
+
+input, select {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+
+button.main {
+  width: 100%;
+  padding: 10px;
+  border: none;
+  border-radius: 10px;
+  background: #f8b500;
+  color: #fff;
+  font-size: 16px;
+  cursor: pointer;
+  margin-top: 8px;
+}
+
+button.main:hover {
+  background: #f1a700;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+th, td {
+  border: 1px solid #ccc;
+  padding: 8px;
+  text-align: center;
+}
+
+td input {
+  width: 90%;
+  padding: 6px;
+  text-align: center;
+}
+
+.result {
+  background: #fff3cd;
+  padding: 15px;
+  border-radius: 10px;
+  margin-top: 20px;
+}
+
+  </style>
+</head>
+<body>
+
+<header id="mainMenu" style="display:none;">
+  <div class="nav-links">
+    <button onclick="goTo('home')">🏠 Trang chủ</button>
+    <button onclick="goTo('calc')">📊 Tính điểm</button>
+    <button onclick="goTo('rank')">🏆 BXH</button>
+    <button onclick="goTo('chat')">💬 Chat chung</button>
+  </div>
+  <div class="user-menu">
+  <img id="userAvatar" src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" 
+       alt="avatar" class="avatar">
+  <span id="userName">Tài khoản</span>
+  <div class="user-dropdown">
+      <button onclick="viewAccount()">Tài khoản</button>
+      <button onclick="viewHistory()">Lịch sử điểm</button>
+      <button onclick="logout()">Đăng xuất</button>
+    </div>
+  </div>
+</header>
+
+<!-- Trang đăng nhập -->
+<div id="loginPage" class="container active">
+  <h2>Đăng nhập hệ thống</h2>
+  <select id="role" onchange="toggleStudentCode()">
+    <option value="student">👨‍🎓 Học sinh</option>
+    <option value="teacher">👩‍🏫 Giáo viên</option>
+  </select>
+  <input type="text" id="username" placeholder="Tên đăng nhập">
+  <input type="password" id="password" placeholder="Mật khẩu">
+  <div id="studentCodeBox">
+    <input type="text" id="studentCode" placeholder="Mã học sinh">
+  </div>
+  <button class="main" onclick="login()">Đăng nhập</button>
+</div>
+
+<!-- Trang chủ -->
+<div id="homePage" class="container">
+  <h2>📢 Bảng Tin Học Tập</h2>
+  <p>Chia sẻ bài viết, cảm nghĩ, hoặc thông báo trong lớp học.</p>
+
+  <!-- Ô đăng bài -->
+  <div id="postBox" style="margin-top:20px;text-align:left;">
+   <textarea id="postContent" rows="3" placeholder="Hôm nay bạn muốn chia sẻ gì?" 
+          style="width:100%;padding:10px;border-radius:10px;border:1px solid #ccc;resize:none;"></textarea>
+
+<input type="file" id="postImage" accept="image/*" style="margin-top:8px;">
+<img id="previewPostImage" style="display:none;margin-top:8px;max-width:100%;border-radius:10px;">
+
+<button class="main" style="margin-top:10px;" onclick="submitPost()">📝 Đăng bài</button>
+
+  </div>
+
+  <!-- Danh sách bài viết -->
+  <div id="postList" style="margin-top:30px;text-align:left;">
+    <h3>📰 Bài viết mới nhất</h3>
+    <div id="postsContainer" style="margin-top:10px;"></div>
+  </div>
+</div>
+
+
+<!-- ====== TRANG TÍNH ĐIỂM ====== -->
+<div id="calcPage" class="container">
+  <div>
+  <label for="studentNameInput">Tên học sinh:</label>
+  <input type="text" id="studentNameInput" placeholder="Nhập tên học sinh" style="margin-bottom: 10px;">
+</div>
+ <h3 style="margin-top:20px;">🎯 Mục tiêu học lực</h3>
+<select id="desiredLevel">
+  <option value="none">-- Chọn học lực mong muốn --</option>
+  <option value="kha">Học sinh Khá (≥ 7.0)</option>
+  <option value="gioi">Học sinh Giỏi (≥ 8.0)</option>
+  <option value="xuatsac">Học sinh Xuất sắc (≥ 9.0)</option>
+</select>
+
+<div style="text-align:center; margin-top:10px;">
+  <button class="main" onclick="predictSubjectScores()">🔮 Dự đoán điểm cho từng môn</button>
+</div>
+
+
+  <h2 style="text-align:center;">📘 Tính điểm trung bình</h2>
+
+  <div id="termSwitch" style="text-align:center; margin:15px 0;">
+    <button id="btnKy1" class="termBtn active" onclick="switchTerm('ky1')">Kỳ 1</button>
+    <button id="btnKy2" class="termBtn" onclick="switchTerm('ky2')">Kỳ 2</button>
+</div>
+
+
+  <!-- Kỳ 1 -->
+  <div id="ky1Container" class="term-container">
+    <h3>🎯 Môn chính (Kỳ 1)</h3>
+    <div id="ky1Main" class="subject-table"></div>
+    <h3>📘 Môn phụ (Kỳ 1)</h3>
+    <div id="ky1Sub" class="subject-table"></div>
+  </div>
+
+  <!-- Kỳ 2 -->
+  <div id="ky2Container" class="term-container" style="display:none;">
+    <h3>🎯 Môn chính (Kỳ 2)</h3>
+    <div id="ky2Main" class="subject-table"></div>
+    <h3>📗 Môn phụ (Kỳ 2)</h3>
+    <div id="ky2Sub" class="subject-table"></div>
+  </div>
+
+  <div style="text-align:center; margin-top:20px;">
+    <button class="main" onclick="calcTermAverage()">Tính điểm trung bình</button>
+    <div style="text-align:center; margin-top:10px;">
+  <button class="main" onclick="resetScores('ky1')">♻️ Reset điểm Kỳ 1</button>
+  <button class="main" onclick="resetScores('ky2')">♻️ Reset điểm Kỳ 2</button>
+
+  </div>
+
+  <div id="resultBox" class="result" style="margin-top:20px; text-align:center;"></div>
+</div>
+
+<style>
+  .termBtn {
+    background: #f1f1f1;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 8px;
+    margin: 0 5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+  .termBtn.active { background: #f8b400; color: #fff; }
+  .subject-table { overflow-x: auto; margin: 10px auto; width: 95%; }
+  table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+  th, td { border: 1px solid #ddd; text-align: center; padding: 6px; }
+  input[type="number"] {
+    width: 65px;
+    text-align: center;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    padding: 4px;
+  }
+</style>
+
+<script>
+/* ====== DATA & TẠO BẢNG ====== */
+const monChinh = ["Ngữ văn", "Toán", "Ngoại ngữ"];
+const monPhu = [
+  "Giáo dục Kinh Tế Pháp Luật",
+  "Lịch sử",
+  "Địa lí",
+  "Vật Lý",
+  "Công nghệ",
+  "Tin học",
+  "Âm nhạc",
+  "Mỹ thuật"
+];
+
+function taoBangKy(idMain, idSub, soTXMain, soTXSub) {
+  const mainContainer = document.getElementById(idMain);
+  const subContainer = document.getElementById(idSub);
+
+  /* ====== BẢNG MÔN CHÍNH ====== */
+  let tableMain = "<table class='subject-table'><tr><th>Môn</th>";
+  for (let i = 1; i <= soTXMain; i++) tableMain += `<th>TX${i}</th>`;
+  tableMain += "<th>GK</th><th>CK</th></tr>";
+
+  monChinh.forEach(mon => {
+    tableMain += `<tr><td>${mon}</td>`;
+    for (let i = 1; i <= soTXMain; i++)
+      tableMain += `<td><input type='number' min='0' max='10'></td>`;
+    tableMain +=
+      "<td><input type='number' min='0' max='10'></td><td><input type='number' min='0' max='10'></td></tr>";
+  });
+  tableMain += "</table>";
+  mainContainer.innerHTML = tableMain;
+
+  /* ====== BẢNG MÔN PHỤ ====== */
+  let tableSub = "<table class='subject-table'><tr><th>Môn</th>";
+  for (let i = 1; i <= soTXSub; i++) tableSub += `<th>TX${i}</th>`;
+  tableSub += "<th>GK</th><th>CK</th></tr>";
+
+  monPhu.forEach(mon => {
+    // Hai môn đặc biệt dùng dropdown
+    if (mon.includes("Âm nhạc") || mon.includes("Mỹ thuật")) {
+      tableSub += `<tr><td>${mon}</td>`;
+      for (let i = 0; i < soTXSub + 2; i++) {
+        tableSub += `
+          <td>
+            <select>
+              <option value="">--Chọn--</option>
+              <option value="0">Không đạt</option>
+              <option value="1">Yếu</option>
+              <option value="2">Trung bình</option>
+              <option value="3">Khá</option>
+              <option value="4">Đạt</option>
+            </select>
+          </td>`;
+      }
+      tableSub += "</tr>";
+    } else {
+      tableSub += `<tr><td>${mon}</td>`;
+      for (let i = 1; i <= soTXSub; i++)
+        tableSub += `<td><input type='number' min='0' max='10'></td>`;
+      tableSub +=
+        "<td><input type='number' min='0' max='10'></td><td><input type='number' min='0' max='10'></td></tr>";
+    }
+  });
+  tableSub += "</table>";
+  subContainer.innerHTML = tableSub;
+}
+
+/* ====== KHỞI TẠO 2 KỲ ====== */
+window.addEventListener("DOMContentLoaded", () => {
+  taoBangKy("ky1Main", "ky1Sub", 4, 3);
+  taoBangKy("ky2Main", "ky2Sub", 4, 3);
+});
+
+/* ====== CHUYỂN KỲ ====== */
+let activeTerm = "ky1";
+function switchTerm(term) {
+  activeTerm = term;
+  document.getElementById("ky1Container").style.display =
+    term === "ky1" ? "block" : "none";
+  document.getElementById("ky2Container").style.display =
+    term === "ky2" ? "block" : "none";
+  document.getElementById("btnKy1").classList.toggle("active", term === "ky1");
+  document.getElementById("btnKy2").classList.toggle("active", term === "ky2");
+}
+
+/* ====== HÀM TÍNH TRUNG BÌNH ====== */
+function calcTermAverage() {
+  const resultBox = document.getElementById("resultBox");
+  resultBox.style.display = "block";
+
+  const tableSelector =
+    activeTerm === "ky1" ? "#ky1Container" : "#ky2Container";
+  const rows = document.querySelectorAll(`${tableSelector} table tr`);
+
+  const mapDropdown = { "0": 3, "1": 5, "2": 6.5, "3": 8, "4": 9 };
+
+  let totalAverage = 0;
+  let subjectCount = 0;
+
+  rows.forEach((row, index) => {
+    if (index === 0) return;
+
+    const cells = row.querySelectorAll("input, select");
+    if (cells.length < 3) return;
+
+    let txSum = 0,
+      txCount = 0;
+    for (let i = 0; i < cells.length - 2; i++) {
+      let v;
+      if (cells[i].tagName === "SELECT") {
+        v = mapDropdown[cells[i].value];
+      } else {
+        v = parseFloat(cells[i].value);
+      }
+      if (!isNaN(v)) {
+        txSum += v;
+        txCount++;
+      }
+    }
+
+    const avgTX = txCount > 0 ? txSum / txCount : 0;
+
+    let gk = 0,
+      ck = 0;
+    if (cells[cells.length - 2].tagName === "SELECT")
+      gk = mapDropdown[cells[cells.length - 2].value] || 0;
+    else gk = parseFloat(cells[cells.length - 2].value) || 0;
+
+    if (cells[cells.length - 1].tagName === "SELECT")
+      ck = mapDropdown[cells[cells.length - 1].value] || 0;
+    else ck = parseFloat(cells[cells.length - 1].value) || 0;
+
+    // ✅ Công thức chính thức Bộ GD: (TX*1 + GK*2 + CK*3) / 6
+    const avgSubject = (avgTX * 1 + gk * 2 + ck * 3) / 6;
+
+    totalAverage += avgSubject;
+    subjectCount++;
+  });
+
+  if (subjectCount === 0) {
+    resultBox.innerHTML = "<p style='color:red;'>⚠️ Chưa nhập điểm nào!</p>";
+    return;
+  }
+
+  const finalAverage = (totalAverage / subjectCount).toFixed(2);
+  const rank =
+    finalAverage >= 9
+      ? "Giỏi"
+      : finalAverage >= 7
+      ? "Khá"
+      : finalAverage >= 5
+      ? "Trung bình"
+      : "Yếu";
+
+  resultBox.innerHTML = `<h3>📊 Điểm trung bình ${activeTerm.toUpperCase()}: <b>${finalAverage}</b> (${rank})</h3>`;
+// ====== LỜI KHUYÊN ======
+const advices = {
+  "Giỏi": [
+    "💪 Bạn học rất tốt! Hãy thử thách bản thân với các đề nâng cao hơn nhé.",
+    "🌟 Giỏi lắm! Hãy chia sẻ kinh nghiệm học tập với bạn bè để cùng tiến bộ."
+  ],
+  "Khá": [
+    "👍 Kết quả tốt! Cố gắng củng cố thêm ở các môn yếu để đạt loại Giỏi nhé.",
+    "📚 Gần đạt Giỏi rồi! Thêm chút nỗ lực nữa thôi."
+  ],
+  "Trung bình": [
+    "📈 Cố gắng cân bằng thời gian giữa các môn, đặc biệt là môn bạn yếu.",
+    "🎯 Đặt mục tiêu nhỏ trước, rồi dần nâng cao – bạn sẽ tiến bộ nhanh hơn."
+  ],
+  "Yếu": [
+    "⚠️ Bạn cần nghiêm túc hơn trong học tập! Hãy bắt đầu từ việc ôn lại kiến thức cơ bản.",
+    "💪 Dù điểm thấp nhưng nếu quyết tâm, bạn sẽ thay đổi được kết quả!"
+  ]
+};
+const randomAdvice = advices[rank][Math.floor(Math.random() * advices[rank].length)];
+
+// Nếu có ô nhập tên học sinh
+const studentNameEl = document.getElementById("studentName");
+const studentName = studentNameEl ? studentNameEl.value.trim() : "Học sinh chưa đặt tên";
+
+// Hiển thị kết quả đầy đủ
+resultBox.innerHTML = `
+  <h3>📊 Điểm trung bình ${activeTerm.toUpperCase()} — ${studentName}</h3>
+  <p>Điểm trung bình: <b>${finalAverage}</b></p>
+  <p>Học lực: <b>${rank}</b></p>
+  <p style="margin-top:10px;font-style:italic;color:#444;">${randomAdvice}</p>
+`;
+
+// ====== Lưu dữ liệu và BXH ======
+try {
+  const username = localStorage.getItem("loggedInUser") || "Ẩn danh";
+  const now = new Date();
+  const timestamp = now.getTime();
+  const monthKey = `${now.getMonth() + 1}/${now.getFullYear()}`;
+
+  // Lịch sử điểm học sinh
+  const userKey = "studentScores_" + username;
+  const allData = JSON.parse(localStorage.getItem(userKey)) || [];
+  allData.push({
+    name: studentName,
+    avg: finalAverage,
+    rank: rank,
+    advice: randomAdvice,
+    time: now.toLocaleString(),
+    month: monthKey,
+    timestamp: timestamp
+  });
+  localStorage.setItem(userKey, JSON.stringify(allData));
+
+  // BXH cá nhân
+  const leaderboardKey = "leaderboard_" + username;
+  const leaderboard = JSON.parse(localStorage.getItem(leaderboardKey)) || {};
+  if (!leaderboard[studentName] || parseFloat(finalAverage) > parseFloat(leaderboard[studentName].best)) {
+    leaderboard[studentName] = { best: finalAverage, updated: now.toLocaleString() };
+  }
+  localStorage.setItem(leaderboardKey, JSON.stringify(leaderboard));
+
+  // Lịch sử BXH theo tháng
+  const rankHistories = JSON.parse(localStorage.getItem("monthlyRank")) || {};
+  if (!rankHistories[monthKey]) rankHistories[monthKey] = {};
+  rankHistories[monthKey][studentName] = finalAverage;
+  localStorage.setItem("monthlyRank", JSON.stringify(rankHistories));
+} catch (e) {
+  console.error("❌ Lỗi khi lưu dữ liệu:", e);
+}
+
+}
+
+
+/* ====== RESET ĐIỂM CHO KỲ ====== */
+function resetScores(term) {
+  const selector =
+    term === "ky1" ? "#ky1Container" : term === "ky2" ? "#ky2Container" : "";
+  if (!selector) return;
+
+  document.querySelectorAll(`${selector} input`).forEach(i => (i.value = ""));
+  document
+    .querySelectorAll(`${selector} select`)
+    .forEach(s => (s.selectedIndex = 0));
+
+  document.getElementById("resultBox").innerHTML =
+    "<p>✅ Đã xóa toàn bộ điểm cho " +
+    (term === "ky1" ? "Kỳ 1" : "Kỳ 2") +
+    ".</p>";
+}
+
+/* ====== DỰ ĐOÁN MỨC ĐIỂM ====== */
+function predictSubjectScores() {
+  const desired = document.getElementById("desiredLevel").value;
+  const resultBox = document.getElementById("resultBox");
+  resultBox.style.display = "block";
+
+  if (desired === "none") {
+    resultBox.innerHTML = "<p>⚠️ Vui lòng chọn học lực mong muốn!</p>";
+    return;
+  }
+
+  const targetAvg =
+    desired === "kha" ? 7.0 : desired === "gioi" ? 8.0 : desired === "xuat" ? 9.0 : 6.0;
+  const mapDropdown = { "0": 3, "1": 5, "2": 6.5, "3": 8, "4": 9 };
+
+  const tableSelector =
+    activeTerm === "ky1" ? "#ky1Container" : "#ky2Container";
+  const subjects = document.querySelectorAll(`${tableSelector} table tr`);
+  let output = `<h3>📊 Dự đoán điểm cần đạt (mục tiêu: ${targetAvg})</h3>`;
+
+  subjects.forEach((row, i) => {
+    if (i === 0) return;
+    const nameCell = row.querySelector("td:first-child");
+    if (!nameCell) return;
+    const subjectName = nameCell.innerText;
+    const inputs = row.querySelectorAll("input, select");
+    if (inputs.length === 0) return;
+
+    let values = [];
+    inputs.forEach(el => {
+      let v =
+        el.tagName === "SELECT"
+          ? mapDropdown[el.value]
+          : parseFloat(el.value);
+      if (!isNaN(v)) values.push(v);
+    });
+
+    if (values.length === inputs.length) {
+      const avg =
+        (values.slice(0, -2).reduce((a, b) => a + b, 0) /
+          (inputs.length - 2) +
+          values[inputs.length - 2] * 2 +
+          values[inputs.length - 1] * 3) /
+        6;
+      output += `<p>📘 ${subjectName}: đủ điểm, TB hiện tại <b>${avg.toFixed(
+        2
+      )}</b></p>`;
+    } else {
+      output += `<p>📘 ${subjectName}: ⚠️ Chưa đủ dữ liệu — để đạt TB ${targetAvg}, các điểm còn lại nên ≥ <b>${targetAvg}</b></p>`;
+    }
+  });
+
+  resultBox.innerHTML = output;
+}
+</script>
+
+
+
+</div>
+
+<!-- Trang BXH -->
+<div id="rankPage" class="container">
+  <h2>🏆 Bảng Xếp Hạng Tổng</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Hạng</th>
+        <th>Tên học sinh</th>
+        <th>Điểm TB cao nhất</th>
+      </tr>
+    </thead>
+    <tbody id="rankTable"></tbody>
+  </table>
+  <div id="personalRank" style="margin-top:15px; font-weight:bold;"></div>
+  <button class="main" onclick="viewRankHistory()">📅 Lịch sử BXH theo tháng</button>
+  <div style="display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:15px;">
+  <button class="main" onclick="showRankHistory('prev')">📆 Xem lịch sử tháng trước</button>
+  <button class="main" onclick="showRankHistory('all')">📅 Xem nhiều tháng</button>
+</div>
+
+<!-- Trang lịch sử BXH -->
+</div> <!-- đóng rankPage -->
+<!-- Trang lịch sử BXH -->
+<div id="rankHistoryPage" class="container">
+  <h2>📅 Lịch sử BXH Theo Tháng</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Tháng</th>
+        <th>Tên học sinh</th>
+        <th>Điểm TB trung bình</th>
+      </tr>
+    </thead>
+    <tbody id="rankHistoryTable"></tbody>
+  </table>
+  <button class="main" onclick="goTo('rank')">⬅️ Quay lại BXH</button>
+</div>
+
+<!-- Trang lịch sử điểm -->
+<div id="historyPage" class="container">
+  <h2>📚 Lịch sử điểm</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Thời gian</th>
+        <th>Học sinh</th>
+        <th>Học lực</th>
+      </tr>
+    </thead>
+    <tbody id="historyTable"></tbody>
+  </table>
+  <button class="main" onclick="clearHistory()">🗑️ Xóa toàn bộ lịch sử</button>
+</div>
+
+
+<!-- Trang chat -->
+<div id="chatPage" class="container">
+  <h2>💬 Chat Chung</h2>
+  <p>Khu vực trò chuyện nhóm sẽ hiển thị ở đây...</p>
+</div>
+
+<script>
+    function likePost(id) {
+  const posts = JSON.parse(localStorage.getItem("posts")) || [];
+  const post = posts.find(p => p.id === id);
+  if(post) {
+    post.likes = post.likes ? post.likes + 1 : 1;
+    localStorage.setItem("posts", JSON.stringify(posts));
+    loadPosts();
+
+  }
+}
+ 
+    // ================== 📝 CHỨC NĂNG ĐĂNG BÀI ==================
+function submitPost() {
+  const username = localStorage.getItem("loggedInUser");
+  if (!username) return alert("Vui lòng đăng nhập trước khi đăng bài!");
+
+  const content = document.getElementById("postContent").value.trim();
+  const imageInput = document.getElementById("postImage");
+  const imageFile = imageInput.files[0];
+
+  if (!content && !imageFile) {
+    return alert("Vui lòng nhập nội dung hoặc chọn ảnh để đăng!");
+  }
+
+  const avatar = localStorage.getItem("avatar_" + username) ||
+    "https://cdn-icons-png.flaticon.com/512/3135/3135715.png";
+  const now = new Date();
+
+  // Nếu có ảnh thì đọc ảnh sang dạng Base64
+  if (imageFile) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      savePost(username, avatar, content, e.target.result, now);
+    };
+    reader.readAsDataURL(imageFile);
+  } else {
+    savePost(username, avatar, content, null, now);
+  }
+}
+
+// Hàm phụ để lưu bài viết
+function savePost(username, avatar, content, imageSrc, now) {
+  const post = {
+    id: Date.now(),
+    user: username,
+    avatar: avatar,
+    content: content,
+    image: imageSrc, // lưu ảnh nếu có
+    time: now.toLocaleString()
+  };
+
+  const posts = JSON.parse(localStorage.getItem("posts")) || [];
+  posts.unshift(post);
+  localStorage.setItem("posts", JSON.stringify(posts));
+
+  // Reset form
+  document.getElementById("postContent").value = "";
+  document.getElementById("postImage").value = "";
+  document.getElementById("previewPostImage").style.display = "none";
+
+  loadPosts();
+}
+
+
+function likePost(id) {
+  const posts = JSON.parse(localStorage.getItem("posts")) || [];
+  const post = posts.find(p => p.id === id);
+  if(post) {
+    post.likes = post.likes ? post.likes + 1 : 1;
+    localStorage.setItem("posts", JSON.stringify(posts));
+    loadPosts(); // refresh giao diện
+  }
+}
+function loadPosts() {
+  const postsContainer = document.getElementById("postsContainer");
+  const posts = JSON.parse(localStorage.getItem("posts")) || [];
+  postsContainer.innerHTML = "";
+
+  if (posts.length === 0) {
+    postsContainer.innerHTML = "<p>Chưa có bài viết nào.</p>";
+    return;
+  }
+
+  posts.forEach(p => {
+    const canDelete = p.user === localStorage.getItem("loggedInUser");
+    const postHTML = `
+      <div class="post">
+        <div class="post-header">
+          <img src="${p.avatar}" alt="avatar">
+          <div>
+            <b>${p.user}</b><br>
+            <span class="post-time">${p.time}</span>
+          </div>
+          ${canDelete ? `<button class="post-delete" onclick="deletePost(${p.id})">Xóa</button>` : ""}
+        </div>
+        <div class="post-content">${p.content}</div>
+${p.image ? `<img src="${p.image}" style="margin-top:8px;max-width:100%;border-radius:10px;">` : ""}
+      </div>
+    `;
+    postsContainer.innerHTML += postHTML;
+  });
+}
+
+// Xóa bài viết
+function deletePost(id) {
+  if(!confirm("Bạn có chắc muốn xóa bài này?")) return;
+  const posts = JSON.parse(localStorage.getItem("posts")) || [];
+  const updated = posts.filter(p => p.id !== id);
+  localStorage.setItem("posts", JSON.stringify(updated));
+  loadPosts();
+}
+
+// Gọi khi vào trang chủ
+function goTo(page) {
+  document.querySelectorAll(".container").forEach(c => c.classList.remove("active"));
+  if(page === 'home') {
+    document.getElementById("homePage").classList.add("active");
+    loadPosts();
+  }
+  if(page === 'calc') document.getElementById("calcPage").classList.add("active");
+  if(page === 'rank') {
+    document.getElementById("rankPage").classList.add("active");
+    loadLeaderboard();
+  }
+  if(page === 'chat') document.getElementById("chatPage").classList.add("active");
+  if(page === 'rankHistory') document.getElementById("rankHistoryPage").classList.add("active");
+  if(page === 'history') document.getElementById("historyPage").classList.add("active");
+}
+
+    window.addEventListener("DOMContentLoaded", ()=>{
+  const username = localStorage.getItem("loggedInUser");
+  if(username){
+    const savedAvatar = localStorage.getItem("avatar_" + username);
+    if(savedAvatar) document.getElementById("userAvatar").src = savedAvatar;
+    document.getElementById("userName").textContent = username;
+    document.getElementById("loginPage").style.display = "none";
+    document.getElementById("mainMenu").style.display = "flex";
+    document.getElementById("homePage").classList.add("active");
+  }
+});
+const subjects = [
+  "Ngữ văn","Toán","Ngoại ngữ","Giáo dục Kinh Tế Pháp Luật ",
+  "Lịch sử","Địa lí","Vật Lý","Công nghệ",
+  "Tin học","Thể dục","Nghệ thuật","Hướng nghiệp"
+];
+const table = document.getElementById("scoreTable");
+subjects.forEach(sub => {
+  let row = "<tr><td>"+sub+"</td>";
+  for(let i=0;i<8;i++) row += "<td><input type='number' min='0' max='10'></td>";
+  row += "</tr>";
+  table.innerHTML += row;
+});
+
+// Hiện/ẩn ô mã học sinh
+function toggleStudentCode() {
+  const role = document.getElementById("role").value;
+  document.getElementById("studentCodeBox").style.display =
+    role === "teacher" ? "none" : "block";
+}
+
+// Đăng nhập
+function login() {
+  const username = document.getElementById("username").value.trim();
+  if(!username) return alert("Vui lòng nhập tên đăng nhập!");
+  localStorage.setItem("loggedInUser", username);
+  localStorage.setItem("loginTime", Date.now());
+  document.getElementById("userName").textContent = username;
+  const savedAvatar = localStorage.getItem("avatar_" + username);
+if(savedAvatar) document.getElementById("userAvatar").src = savedAvatar;
+  document.getElementById("loginPage").style.display = "none";
+  document.getElementById("mainMenu").style.display = "flex";
+  goTo('home');
+}
+
+// Đăng xuất
+function logout() {
+  localStorage.removeItem("loggedInUser");
+  localStorage.removeItem("loginTime");
+  document.getElementById("mainMenu").style.display = "none";
+  document.querySelectorAll(".container").forEach(c => c.classList.remove("active"));
+  document.getElementById("loginPage").classList.add("active");
+}
+
+// Chuyển trang
+function goTo(page) {
+  document.querySelectorAll(".container").forEach(c => c.classList.remove("active"));
+  if(page === 'home') document.getElementById("homePage").classList.add("active");
+  if(page === 'calc') document.getElementById("calcPage").classList.add("active");
+  if(page === 'rank') { document.getElementById("rankPage").classList.add("active"); loadLeaderboard(); }
+  if(page === 'chat') document.getElementById("chatPage").classList.add("active");
+  if(page === 'history') document.getElementById("historyPage").classList.add("active");
+  if(page === 'rankHistory') document.getElementById("rankHistoryPage").classList.add("active");
+}
+
+function calcAverage() {
+  const studentName = document.getElementById("studentName").value.trim();
+  if (!studentName) return alert("Vui lòng nhập tên học sinh!");
+
+  let total = 0, count = 0;
+
+  // Lặp qua tất cả ô điểm
+  document.querySelectorAll("#scoreTable input").forEach(inp => {
+    const val = parseFloat(inp.value);
+    if (!isNaN(val)) {
+      total += val;
+      count++;
+    }
+  });
+
+  if (count === 0) {
+    alert("Vui lòng nhập ít nhất 1 điểm để tính!");
+    return;
+  }
+
+  const avgNum = total / count; // số thực
+  const avg = avgNum.toFixed(2); // string hiển thị
+  const rank =
+    avgNum >= 8 ? "Giỏi" :
+    avgNum >= 6.5 ? "Khá" :
+    avgNum >= 5 ? "Trung bình" : "Yếu";
+
+  // Danh sách lời khuyên
+  const advices = {
+    "Giỏi": [
+      "💪 Bạn học rất tốt! Hãy thử thách bản thân với các đề nâng cao hơn nhé.",
+      "🌟 Giỏi lắm! Hãy chia sẻ kinh nghiệm học tập với bạn bè để cùng tiến bộ.",
+      "🎯 Duy trì phong độ nhé! Thử tham gia các kỳ thi học sinh giỏi xem sao?",
+      "🔥 Thành tích xuất sắc! Hãy học thêm các kỹ năng mềm để phát triển toàn diện.",
+      "📘 Bạn đang làm rất tốt! Tiếp tục đọc thêm sách, tìm hiểu kiến thức mở rộng.",
+      "🚀 Học lực của bạn rất vững, hãy đặt mục tiêu cao hơn cho kỳ tới!"
+    ],
+    "Khá": [
+      "👍 Kết quả tốt! Cố gắng củng cố thêm ở các môn yếu để đạt loại Giỏi nhé.",
+      "💡 Học đều, có nền tảng tốt! Hãy đặt kế hoạch cụ thể để nâng cao từng môn.",
+      "📚 Gần đạt Giỏi rồi! Thêm chút nỗ lực nữa thôi.",
+      "🌱 Tiềm năng lớn! Tập trung ôn luyện đều đặn là sẽ vươn lên Giỏi.",
+      "🔥 Cố gắng duy trì động lực học tập, bạn đang đi đúng hướng.",
+      "🎓 Thầy/cô tin rằng bạn có thể làm tốt hơn nữa kỳ sau!"
+    ],
+    "Trung bình": [
+      "📘 Bạn cần cải thiện thêm. Hãy ôn lại kiến thức cũ và luyện tập thường xuyên hơn.",
+      "💭 Đừng nản! Mỗi ngày học thêm một chút, kết quả sẽ khác biệt.",
+      "📈 Cố gắng cân bằng thời gian giữa các môn, đặc biệt là môn bạn yếu.",
+      "⚡ Hãy hỏi thầy cô hoặc bạn bè khi không hiểu bài nhé.",
+      "🎯 Đặt mục tiêu nhỏ trước, rồi dần nâng cao – bạn sẽ tiến bộ nhanh hơn.",
+      "🏋️‍♂️ Học lực TB không xấu, chỉ cần bạn kiên trì là sẽ vượt lên!"
+    ],
+    "Yếu": [
+      "⚠️ Bạn cần nghiêm túc hơn trong học tập! Hãy bắt đầu từ việc ôn lại kiến thức cơ bản.",
+      "💔 Đừng bỏ cuộc, hãy nhờ thầy cô giúp đỡ thêm và lập kế hoạch học tập lại từ đầu.",
+      "🧩 Tập trung vào những môn yếu nhất, mỗi ngày chỉ cần tiến bộ một chút thôi.",
+      "📅 Hãy đặt thời gian biểu rõ ràng và học đều đặn mỗi ngày.",
+      "🔥 Dù điểm thấp nhưng nếu quyết tâm, bạn sẽ thay đổi được kết quả!",
+      "💪 Học lực yếu không phải là mãi mãi — chỉ cần bạn không bỏ cuộc."
+    ]
+  };
+
+  // Chọn lời khuyên ngẫu nhiên
+  const randomAdvice = advices[rank][Math.floor(Math.random() * advices[rank].length)];
+
+  // Hiển thị kết quả
+  const resultBox = document.getElementById("resultBox");
+  if (!resultBox) return alert("Không tìm thấy resultBox trong HTML!");
+  resultBox.style.display = "block";
+  resultBox.innerHTML = `
+    <h3>${studentName}</h3>
+    <p>Điểm trung bình: <b>${avg}</b></p>
+    <p>Học lực: <b>${rank}</b></p>
+    <p style="margin-top:10px;font-style:italic;color:#444;">${randomAdvice}</p>
+  `;
+
+  // Lưu dữ liệu vào localStorage
+  const username = localStorage.getItem("loggedInUser") || "Ẩn danh";
+  const now = new Date();
+  const timestamp = now.getTime();
+  const monthKey = `${now.getMonth() + 1}/${now.getFullYear()}`;
+
+  // Lưu điểm học sinh
+  const userKey = "studentScores_" + username;
+  const allData = JSON.parse(localStorage.getItem(userKey)) || [];
+  allData.push({
+    name: studentName,
+    avg: avg,
+    rank: rank,
+    advice: randomAdvice,
+    time: now.toLocaleString(),
+    month: monthKey,
+    timestamp: timestamp
+  });
+
+  // Giữ dữ liệu 30 ngày
+  const monthAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
+  const cleaned = allData.filter(r => r.timestamp >= monthAgo);
+  localStorage.setItem(userKey, JSON.stringify(cleaned));
+
+  // Cập nhật leaderboard
+  const leaderboardKey = "leaderboard_" + username;
+  const leaderboard = JSON.parse(localStorage.getItem(leaderboardKey)) || {};
+  if (!leaderboard[studentName] || parseFloat(avg) > parseFloat(leaderboard[studentName].best)) {
+    leaderboard[studentName] = { best: avg, updated: now.toLocaleString() };
+  }
+  localStorage.setItem(leaderboardKey, JSON.stringify(leaderboard));
+
+  // Lịch sử theo tháng
+  const rankHistories = JSON.parse(localStorage.getItem("monthlyRank")) || {};
+  if (!rankHistories[monthKey]) rankHistories[monthKey] = {};
+  rankHistories[monthKey][studentName] = avg;
+  localStorage.setItem("monthlyRank", JSON.stringify(rankHistories));
+}
+
+
+// BXH tổng
+function loadLeaderboard() {
+  const username = localStorage.getItem("loggedInUser");
+  if(!username) return;
+  const leaderboard = JSON.parse(localStorage.getItem("leaderboard_" + username)) || {};
+  const rankTable = document.getElementById("rankTable");
+  const sorted = Object.entries(leaderboard).sort((a,b) => b[1].best - a[1].best);
+  rankTable.innerHTML = "";
+  if(sorted.length === 0) { rankTable.innerHTML = `<tr><td colspan="3">Chưa có dữ liệu BXH</td></tr>`; return; }
+  sorted.forEach(([name,data],i) => { rankTable.innerHTML += `<tr><td>${i+1}</td><td>${name}</td><td>${data.best}</td></tr>`; });
+  document.getElementById("personalRank").innerHTML = `👥 Tổng số học sinh: <b>${sorted.length}</b><br><i>Dữ liệu tự xóa sau 30 ngày.</i>`;
+}
+
+// Lịch sử điểm
+function viewHistory(){
+  const username = localStorage.getItem("loggedInUser");
+  const allData = JSON.parse(localStorage.getItem("studentScores_" + username)) || [];
+  const table = document.getElementById("historyTable");
+  table.innerHTML = "";
+  if(allData.length === 0){ table.innerHTML = `<tr><td colspan="3">Chưa có dữ liệu học sinh nào</td></tr>`; }
+  else {
+    allData.slice().reverse().forEach(item => {
+      table.innerHTML += `<tr><td>${item.time}</td><td>${item.name} — ${item.avg}</td><td>${item.rank}</td></tr>`;
+    });
+  }
+  goTo('history');
+}
+
+// Xóa toàn bộ lịch sử
+function clearHistory(){
+  const username = localStorage.getItem("loggedInUser");
+  if(confirm("Bạn có chắc muốn xóa toàn bộ lịch sử điểm?")){
+    localStorage.removeItem("studentScores_" + username);
+    localStorage.removeItem("leaderboard_" + username);
+    document.getElementById("historyTable").innerHTML = `<tr><td colspan="3">Đã xóa toàn bộ dữ liệu</td></tr>`;
+  }
+}
+
+// Lịch sử BXH theo tháng
+function viewRankHistory(){
+  const rankHistories = JSON.parse(localStorage.getItem("monthlyRank")) || {};
+  const table = document.getElementById("rankHistoryTable");
+  table.innerHTML = "";
+  const months = Object.keys(rankHistories).sort((a,b) => {
+    const [mA,yA] = a.split('/').map(Number);
+    const [mB,yB] = b.split('/').map(Number);
+    return yB - yA || mB - mA;
+  });
+  if(months.length===0){ table.innerHTML = `<tr><td colspan="3">Chưa có dữ liệu BXH theo tháng</td></tr>`; }
+  else {
+    months.forEach(month => {
+      const data = rankHistories[month];
+      Object.entries(data).forEach(([user, avg]) => {
+        table.innerHTML += `<tr><td>${month}</td><td>${user}</td><td>${avg}</td></tr>`;
+      });
+    });
+  }
+  goTo('rankHistory');
+}
+
+// Tự động xóa dữ liệu cũ > 30 ngày
+window.addEventListener("load", () => {
+  const username = localStorage.getItem("loggedInUser");
+  if(username){
+    const key = "studentScores_" + username;
+    const data = JSON.parse(localStorage.getItem(key)) || [];
+    const monthAgo = Date.now() - 30*24*60*60*1000;
+    const cleaned = data.filter(r => r.timestamp >= monthAgo);
+    if(cleaned.length !== data.length){
+      localStorage.setItem(key, JSON.stringify(cleaned));
+    }
+  }
+});
+
+// Phụ
+function viewAccount() {
+  const username = localStorage.getItem("loggedInUser");
+  if(!username) return alert("Bạn chưa đăng nhập!");
+
+  const currentAvatar = localStorage.getItem("avatar_" + username);
+
+  const popup = document.createElement("div");
+  popup.style.position = "fixed";
+  popup.style.top = "0";
+  popup.style.left = "0";
+  popup.style.width = "100%";
+  popup.style.height = "100%";
+  popup.style.background = "rgba(0,0,0,0.6)";
+  popup.style.display = "flex";
+  popup.style.justifyContent = "center";
+  popup.style.alignItems = "center";
+  popup.style.zIndex = "2000";
+
+  popup.innerHTML = `
+    <div style="background:white;padding:30px;border-radius:15px;text-align:center;width:350px;position:relative;">
+      <h3>Ảnh đại diện của bạn</h3>
+      <img id="previewAvatar" src="${currentAvatar || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png'}"
+           style="width:100px;height:100px;border-radius:50%;border:2px solid #f8b500;object-fit:cover;margin:15px 0;">
+      <input type="file" id="avatarFile" accept="image/*" style="display:block;margin:auto;">
+      <button onclick="saveAvatar('${username}')" class="main">💾 Lưu ảnh</button>
+      <button onclick="closePopup()" class="main" style="background:#999;margin-top:10px;">❌ Đóng</button>
+    </div>
+  `;
+  document.body.appendChild(popup);
+
+  document.getElementById("avatarFile").addEventListener("change", (e) => {
+    const file = e.target.files[0];
+    if(file){
+      const reader = new FileReader();
+      reader.onload = function(ev){
+        document.getElementById("previewAvatar").src = ev.target.result;
+      }
+      reader.readAsDataURL(file);
+    }
+  });
+}
+
+function closePopup(){
+  document.querySelectorAll("body > div").forEach(div => {
+    if(div.style && div.style.position === "fixed") div.remove();
+  });
+}
+
+function saveAvatar(username){
+  const imgSrc = document.getElementById("previewAvatar").src;
+  localStorage.setItem("avatar_" + username, imgSrc);
+  document.getElementById("userAvatar").src = imgSrc;
+  alert("Đã lưu ảnh đại diện thành công!");
+  closePopup();
+}
+// 🕒 Xóa bài viết cũ hơn 30 ngày mỗi lần tải trang
+window.addEventListener("load", () => {
+  const posts = JSON.parse(localStorage.getItem("posts")) || [];
+  const monthAgo = Date.now() - 30*24*60*60*1000;
+  const cleaned = posts.filter(p => p.id >= monthAgo);
+  if(cleaned.length !== posts.length){
+    localStorage.setItem("posts", JSON.stringify(cleaned));
+    console.log("Đã xóa bài viết cũ hơn 30 ngày.");
+  }
+});
+// 📊 Hiển thị lịch sử BXH theo chế độ nút bấm (sửa chuẩn)
+function showRankHistory(mode) {
+  const rankHistories = JSON.parse(localStorage.getItem("monthlyRank")) || {};
+  const table = document.getElementById("rankHistoryTable");
+  table.innerHTML = "";
+
+  // Nếu chưa có dữ liệu
+  if (!Object.keys(rankHistories).length) {
+    table.innerHTML = `<tr><td colspan="3">❌ Chưa có dữ liệu BXH nào được lưu</td></tr>`;
+    document.querySelector("#rankHistoryPage h2").innerHTML = "📅 Lịch sử BXH — Không có dữ liệu";
+    return goTo("rankHistory");
+  }
+
+  // 🗓 Xem BXH tháng trước
+  if (mode === "prev") {
+    const now = new Date();
+    let prevMonth = now.getMonth(); // getMonth() trả 0–11
+    let prevYear = now.getFullYear();
+
+    if (prevMonth === 0) { // nếu đang là tháng 1 thì lùi về 12 năm trước
+      prevMonth = 12;
+      prevYear -= 1;
+    }
+
+    const prevMonthKey = `${prevMonth}/${prevYear}`;
+    const data = rankHistories[prevMonthKey];
+
+    if (!data) {
+      table.innerHTML = `<tr><td colspan="3">⚠️ Không có dữ liệu BXH của tháng trước (${prevMonthKey}).</td></tr>`;
+      document.querySelector("#rankHistoryPage h2").innerHTML =
+        `📅 Lịch sử BXH — Tháng trước (${prevMonthKey})`;
+    } else {
+      Object.entries(data).forEach(([user, avg]) => {
+        table.innerHTML += `<tr><td>${prevMonthKey}</td><td>${user}</td><td>${avg}</td></tr>`;
+      });
+      document.querySelector("#rankHistoryPage h2").innerHTML =
+        `📅 Lịch sử BXH — Tháng trước (${prevMonthKey})`;
+    }
+  }
+
+  // 📅 Xem toàn bộ BXH đã lưu
+  else if (mode === "all") {
+    Object.entries(rankHistories).forEach(([month, data]) => {
+      Object.entries(data).forEach(([user, avg]) => {
+        table.innerHTML += `<tr><td>${month}</td><td>${user}</td><td>${avg}</td></tr>`;
+      });
+    });
+    document.querySelector("#rankHistoryPage h2").innerHTML =
+      "📅 Lịch sử BXH — Tất cả các tháng";
+  }
+
+  goTo("rankHistory");
+}
+
+// Xem trước ảnh khi chọn
+document.getElementById("postImage").addEventListener("change", function(e){
+  const file = e.target.files[0];
+  const preview = document.getElementById("previewPostImage");
+  if(file){
+    const reader = new FileReader();
+    reader.onload = function(ev){
+      preview.src = ev.target.result;
+      preview.style.display = "block";
+    };
+    reader.readAsDataURL(file);
+  } else {
+    preview.style.display = "none";
+  }
+});
+
+</script>
+
+</body>
+</html>
