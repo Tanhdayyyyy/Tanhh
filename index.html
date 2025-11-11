@@ -5,7 +5,7 @@
   <title>Ứng dụng Dự đoán Học lực</title>
   <style>
     .post {
-  background: #fff7e6;
+  background: #131313;
   border-radius: 10px;
   padding: 15px;
   margin-bottom: 15px;
@@ -73,7 +73,9 @@
   object-fit: cover;
   vertical-align: middle;
   margin-right: 8px;
-  background: #fff;
+  background: #1e1e1e;
+  color: white;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.45);
   cursor: pointer;
   transition: transform 0.2s;
 }
@@ -83,11 +85,28 @@
 }
 
    * { box-sizing: border-box; margin: 0; padding: 0; }
-body {
-  font-family: "Segoe UI", sans-serif;
-  background: linear-gradient(135deg, #fceabb, #f8b500);
+  body {
+  font-family: "Montserrat", sans-serif; /* hoặc Inter nếu chọn font khác */
+  background: #111;
+  color: #fff;
   min-height: 100vh;
 }
+.hero {
+  display: none;
+}
+
+#chat.active ~ .hero,
+#calc.active ~ .hero,
+#rank.active ~ .hero {
+  display: none;
+}
+
+/* Chỉ hiện hero khi trang home = Bảng Tin */
+#home.active ~ .hero {
+  display: block;
+}
+
+
 
 /* --- Thanh menu cố định --- */
 header {
@@ -95,7 +114,8 @@ header {
   top: 0;
   left: 0;
   width: 100%;
-  background: #f8b500;
+    background: #181818;
+  border-bottom: 1px solid #333;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -157,10 +177,21 @@ header {
 .user-menu:hover .user-dropdown {
   display: block;
 }
+.nav-links button {
+  color: #ffffff;
+}
+
+.nav-links button:hover {
+  color: #f8b500; /* vàng nhấn GoalStudy */
+}
+
 
 /* --- Container chính --- */
 .container {
-  background: #fff;
+   background: #1e1e1e;
+  color: white;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.45);
+  border-radius: 20px;
   border-radius: 20px;
   padding: 40px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.2);
@@ -188,7 +219,8 @@ button.main {
   padding: 10px;
   border: none;
   border-radius: 10px;
-  background: #f8b500;
+   background: #181818;
+  border-bottom: 1px solid #333;
   color: #fff;
   font-size: 16px;
   cursor: pointer;
@@ -224,9 +256,617 @@ td input {
   margin-top: 20px;
 }
 
-  </style>
+
+.hero .overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+}
+
+.hero-content {
+  position: relative;
+  text-align: center;
+  color: white;
+}
+
+.hero-content h1 {
+  font-size: 36px;
+  font-weight: 700;
+}
+
+.hero-content p {
+  font-size: 17px;
+  margin-top: 8px;
+  opacity: 0.85;
+}
+.hero-content h1 {
+  font-size: 52px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.hero-content p {
+  font-size: 18px;
+  margin-top: 10px;
+  opacity: 0.85;
+}
+.hero .overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.55); /* làm tối nền để chữ nổi */
+  backdrop-filter: blur(1px);
+}
+/* Input và Select */
+input, select, td input {
+  background: #2b2b2b;
+  color: #fff;
+  border: 1px solid #444;
+}
+
+/* Nút tính điểm */
+button.main {
+  background: #f8b500;
+  color: #111;
+  font-weight: 600;
+}
+
+/* Bảng điểm */
+table {
+  background: #1e1e1e;
+  border: 1px solid #444;
+}
+
+th {
+  background: #222;
+  color: #f8b500;
+  font-weight: 600;
+}
+
+td {
+  border: 1px solid #333;
+  color: #fff;
+}
+.hero-content h1 {
+  font-size: 52px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  animation: floatTitle 3s ease-in-out infinite;
+}
+
+/* Hiệu ứng nổi lên và nghiêng nhẹ */
+@keyframes floatTitle {
+  0%, 100% {
+    transform: translateY(0) rotateX(0deg);
+    text-shadow: 0 0 10px rgba(255,255,255,0.3);
+  }
+  50% {
+    transform: translateY(-8px) rotateX(6deg);
+    text-shadow: 0 0 25px rgba(255,255,255,0.6);
+  }
+}
+.container {
+  transform-style: preserve-3d;
+  transition: transform 0.6s ease, box-shadow 0.6s ease;
+}
+
+.container.active {
+  transform: perspective(700px) rotateY(3deg) scale(1.02);
+  box-shadow: 0 15px 40px rgba(248,181,0,0.15);
+}
+body {
+  background: radial-gradient(circle at center, #161616 0%, #0b0b0b 100%);
+  perspective: 1200px;
+  overflow-x: hidden;
+}
+.avatar:hover {
+  transform: rotateY(360deg);
+  transition: transform 0.8s ease;
+}
+@keyframes pressDown {
+  0% { transform: scale(1); }
+  50% { transform: scale(0.9); }
+  100% { transform: scale(1); }
+}
+.nav-links button:active {
+  animation: pressDown 0.15s ease;
+}
+
+/* --- Hiệu ứng 3D cho các nút menu --- */
+.nav-links button {
+  background: linear-gradient(145deg, #1c1c1c, #111);
+  border: 1px solid #333;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  transition: transform 0.2s ease, box-shadow 0.3s ease;
+  border-radius: 8px;
+  padding: 10px 18px;
+}
+
+/* Khi hover hoặc active, nghiêng 3D */
+.nav-links button:hover {
+  transform: perspective(400px) rotateX(8deg) rotateY(-8deg) scale(1.05);
+  box-shadow: 0 10px 20px rgba(248,181,0,0.3);
+  background: linear-gradient(145deg, #f8b500, #e19a00);
+  color: #111;
+}
+
+/* Khi nhấn (click) – hiệu ứng bấm xuống */
+.nav-links button:active {
+  transform: perspective(400px) rotateX(-4deg) rotateY(4deg) scale(0.97);
+  box-shadow: 0 3px 6px rgba(0,0,0,0.6) inset;
+}
+
+.hero {
+  position: relative;
+  height: 360px;
+  background: url("https://cdn.mos.cms.futurecdn.net/n77PXqvydQn9FoQ09B3B8P.jpg") center/cover no-repeat !important;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-bottom: 1px solid #222;
+}
+
+.hero .overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+}
+#resultBox, #predictResult {
+  margin-top: 18px;
+  padding: 18px 22px;
+  
+  background: rgba(20, 20, 20, 0.75);
+  backdrop-filter: blur(6px);
+  
+  border: 1px solid #4f4f4f;
+  border-radius: 14px;
+
+  color: #ffffff;
+  font-size: 17px;
+  line-height: 1.5;
+}
+
+/* Tiêu đề trong kết quả */
+#resultBox h3, #predictResult h3 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  font-size: 22px;
+  color: #f8b500; /* vàng điểm nhấn */
+  font-weight: 700;
+}
+
+/* Số điểm nổi bật */
+.highlight-score {
+  font-size: 26px;
+  font-weight: 700;
+  color: #00eaff; /* xanh sáng dễ đọc trên nền tối */
+}
+/* --- Khối BXH có hiệu ứng nghiêng 3D --- */
+.rank-board {
+  background: #1b1b1b;
+  border-radius: 16px;
+  box-shadow: 0 12px 35px rgba(248,181,0,0.15);
+  padding: 25px;
+  width: 90%;
+  max-width: 700px;
+  margin: 40px auto;
+  transform: perspective(1000px) rotateX(6deg) rotateY(-5deg);
+  transition: all 0.8s ease;
+  transform-style: preserve-3d;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+/* Khi người dùng rê chuột vào → thẳng lại, sáng lên */
+.rank-board:hover,
+.rank-board:focus-within {
+  transform: perspective(1000px) rotateX(0deg) rotateY(0deg) scale(1.02);
+  box-shadow: 0 20px 50px rgba(248,181,0,0.3);
+  border-color: rgba(255,255,255,0.25);
+}
+
+/* --- Bảng bên trong --- */
+.rank-board table {
+  width: 100%;
+  border-collapse: collapse;
+  background: rgba(20,20,20,0.85);
+  color: white;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.rank-board th {
+  background: #2a2a2a;
+  color: #f8b500;
+  padding: 10px;
+}
+
+.rank-board td {
+  padding: 10px;
+  border-top: 1px solid #333;
+}
+
+/* --- Nút bên dưới --- */
+.rank-board button {
+  width: 100%;
+  background: #f8b500;
+  border: none;
+  color: #111;
+  padding: 12px;
+  font-weight: 600;
+  border-radius: 8px;
+  margin-top: 10px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 5px 10px rgba(248,181,0,0.3);
+}
+
+.rank-board button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 18px rgba(248,181,0,0.4);
+}
+
+.rank-board button:active {
+  transform: translateY(1px);
+  box-shadow: 0 3px 6px rgba(0,0,0,0.5) inset;
+}
+
+/* ===== HERO SECTION ===== */
+.hero {
+  position: relative;
+  height: 100vh;
+  background: linear-gradient(to bottom right, #ffb347, #ffcc33);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  animation: fadeInHero 1s ease-in-out;
+}
+
+.hero .overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.hero-content {
+  position: relative;
+  z-index: 2;
+  color: white;
+  text-align: center;
+  animation: slideUp 1s ease-out;
+}
+
+/* Animation keyframes */
+@keyframes fadeInHero {
+  from { opacity: 0; transform: scale(1.05); }
+  to { opacity: 1; transform: scale(1); }
+}
+@keyframes slideUp {
+  from { transform: translateY(40px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* ===== MENU CHÍNH ===== */
+header#mainMenu {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 999;
+  background: #fff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 20px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+header#mainMenu.hidden {
+  transform: translateY(-100%);
+  opacity: 0;
+}
+
+/* Khi menu hiện */
+.nav-links button {
+  background: none;
+  border: none;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: 0.2s;
+}
+.nav-links button:hover {
+  background: #f8b400;
+  color: #fff;
+  border-radius: 6px;
+}
+
+/* Avatar */
+.avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+/* User dropdown */
+.user-menu {
+  position: relative;
+}
+.user-dropdown {
+  display: none;
+  position: absolute;
+  top: 45px;
+  right: 0;
+  background: #fff;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+  border-radius: 8px;
+  overflow: hidden;
+  z-index: 1000;
+}
+.user-menu:hover .user-dropdown {
+  display: block;
+}
+
+/* ===== PAGE CONTAINER ===== */
+.container {
+  display: none;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+  padding: 90px 20px 40px; /* tránh bị menu đè */
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+.container.active {
+  display: block;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Nút chính */
+button.main {
+  background: #f8b400;
+  color: white;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: 0.2s;
+}
+button.main:hover {
+  background: #d89b00;
+}
+/* ===== RESET LẠI HEADER ===== */
+header#mainMenu {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background: #ffffff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 30px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+header#mainMenu.hidden {
+  transform: translateY(-100%);
+  opacity: 0;
+}
+
+/* Nhóm nút bên trái */
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.nav-links button {
+  background: none;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #444;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.nav-links button:hover {
+  background: #f8b400;
+  color: white;
+}
+
+/* Avatar và menu người dùng */
+.user-menu {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.user-menu span {
+  font-weight: 600;
+  color: #333;
+}
+
+.avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 2px solid #eee;
+  cursor: pointer;
+  object-fit: cover;
+}
+
+/* Dropdown tài khoản */
+.user-dropdown {
+  display: none;
+  position: absolute;
+  right: 0;
+  top: 48px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+  overflow: hidden;
+  min-width: 150px;
+  z-index: 1001;
+}
+
+.user-dropdown button {
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: none;
+  padding: 10px 12px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.user-dropdown button:hover {
+  background: #f8b400;
+  color: white;
+}
+
+.user-menu:hover .user-dropdown {
+  display: block;
+}
+
+/* Container chung — tránh menu đè */
+.container {
+  margin-top: 80px;
+  padding: 20px;
+}
+
+/* Nút chính */
+button.main {
+  background: #f8b400;
+  border: none;
+  color: white;
+  padding: 10px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background 0.2s;
+}
+button.main:hover {
+  background: #d89b00;
+}
+/* ==== HERO BANNER ==== */
+.hero {
+  height: 45vh; /* giảm chiều cao để gần nội dung dưới */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  background: linear-gradient(to bottom, #000000, #111111);
+  color: white;
+  text-align: center;
+  padding: 40px 20px;
+  margin-bottom: 30px; /* khoảng cách hợp lý với phần sau */
+}
+
+.hero-content h1 {
+  font-size: 52px; /* to hơn một chút */
+  margin-bottom: 10px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  animation: floatTitle 3s ease-in-out infinite;
+}
+
+.hero-content p {
+  font-size: 18px;
+  opacity: 0.9;
+  margin-top: 5px;
+}
+
+/* ==== KHOẢNG CÁCH CONTAINER ==== */
+.container {
+  margin-top: 50px; /* từ menu xuống */
+  margin-bottom: 40px; /* giữa các section */
+  padding: 20px 25px;
+  max-width: 1000px;
+  margin-left: auto;
+  margin-right: auto;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+}
+
+/* ====== HEADER GỌN HƠN ====== */
+header#mainMenu {
+  padding: 8px 30px; /* bớt cao lại để hero gần hơn */
+  height: 60px;
+}
+
+/* ====== NÚT HƠI TO HƠN ====== */
+.nav-links button {
+  padding: 8px 14px;
+  font-size: 15px;
+}
+/* Hiệu ứng nổi cho các khối chính */
+.container,
+#postBox,
+.term-container,
+#resultBox,
+.rank-board {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.05);
+  transition: all 0.3s ease;
+  transform: translateY(0);
+}
+
+/* Khi hover – nổi lên nhẹ */
+.container:hover,
+#postBox:hover,
+.term-container:hover,
+#resultBox:hover,
+.rank-board:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.35);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+/* Khi click (active) – nhấn xuống một chút */
+.container:active,
+#postBox:active,
+.term-container:active,
+#resultBox:active,
+.rank-board:active {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+/* Giảm nhẹ padding để nổi không quá xa */
+.container {
+  padding: 20px 25px;
+}
+
+/* Tăng hiệu ứng mượt */
+* {
+  transition: all 0.25s ease;
+}
+
+</style>
+
+</style>
 </head>
 <body>
+  <div class="hero">
+  <div class="overlay"></div>
+  <div class="hero-content">
+    <h1 style="font-weight: 700;">GoalStudy</h1>
+<p>Nơi chia sẻ thông tin học tập và kết nối bạn bè.</p>
+  </div>
+</div>
+
 
 <header id="mainMenu" style="display:none;">
   <div class="nav-links">
@@ -861,6 +1501,20 @@ function goTo(page) {
   if(page === 'chat') document.getElementById("chatPage").classList.add("active");
   if(page === 'rankHistory') document.getElementById("rankHistoryPage").classList.add("active");
   if(page === 'history') document.getElementById("historyPage").classList.add("active");
+  function goTo(page) {
+  document.querySelectorAll('.container').forEach(c => c.classList.remove('active'));
+  const target = document.getElementById(page + 'Page');
+  if (target) target.classList.add('active');
+
+  const menu = document.getElementById("mainMenu");
+  if (page === "login") {
+    menu.classList.add("hidden");
+    setTimeout(() => menu.style.display = "none", 300);
+  } else {
+    menu.style.display = "flex";
+    setTimeout(() => menu.classList.remove("hidden"), 10);
+  }
+  }
 }
 
     window.addEventListener("DOMContentLoaded", ()=>{
